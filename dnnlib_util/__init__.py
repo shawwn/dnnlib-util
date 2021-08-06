@@ -376,13 +376,13 @@ def open_url(url: str, cache_dir: str = None, num_attempts: int = 10, verbose: b
                         raise IOError("No data received")
 
                     if len(res.content) < 8192:
-                        content_str = res.content.decode("utf-8")
                         if "download_warning" in res.headers.get("Set-Cookie", ""):
+                            content_str = res.content.decode("utf-8")
                             links = [html.unescape(link) for link in content_str.split('"') if "export=download" in link]
                             if len(links) == 1:
                                 url = requests.compat.urljoin(url, links[0])
                                 raise IOError("Google Drive virus checker nag")
-                        if "Google Drive - Quota exceeded" in content_str:
+                        if b"Google Drive - Quota exceeded" in res.content:
                             raise IOError("Google Drive download quota exceeded -- please try again later")
 
                     match = re.search(r'filename="([^"]*)"', res.headers.get("Content-Disposition", ""))
